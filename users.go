@@ -11,10 +11,7 @@ type UsersService struct {
 	client *Client
 }
 
-// Get fetches a user.  Passing the empty string will fetch the authenticated
-// user.
-//
-// GitHub API docs: http://developer.github.com/v3/users/#get-a-single-user
+// Returns current authenticated user object
 func (s *UsersService) Current() (*User, *Response, error) {
 	req, err := s.client.NewRequest("GET", "user", nil)
 	if err != nil {
