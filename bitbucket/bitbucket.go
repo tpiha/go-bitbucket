@@ -13,8 +13,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/google/go-querystring/query"
 )
 
 const (
@@ -143,7 +146,7 @@ type Response struct {
 // newResponse creates a new Response for the provided http.Response.
 func newResponse(r *http.Response) *Response {
 	response := &Response{Response: r}
-	response.populatePageValues()
+	// response.populatePageValues()
 	return response
 }
 
@@ -240,4 +243,39 @@ func sanitizeURL(uri *url.URL) *url.URL {
 		uri.RawQuery = params.Encode()
 	}
 	return uri
+}
+
+// ListOptions specifies the optional parameters to various List methods that
+// support pagination.
+type ListOptions struct {
+	// For paginated result sets, page of results to retrieve.
+	Page int `url:"page,omitempty"`
+
+	// For paginated result sets, the number of results to include per page.
+	PerPage int `url:"pagelen,omitempty"`
+
+	// For paginated result sets, size of the list.
+	Size int `url:"size,omitempty"`
+}
+
+// addOptions adds the parameters in opt as URL query parameters to s.  opt
+// must be a struct whose fields may contain "url" tags.
+func addOptions(s string, opt interface{}) (string, error) {
+	v := reflect.ValueOf(opt)
+	if v.Kind() == reflect.Ptr && v.IsNil() {
+		return s, nil
+	}
+
+	u, err := url.Parse(s)
+	if err != nil {
+		return s, err
+	}
+
+	qs, err := query.Values(opt)
+	if err != nil {
+		return s, err
+	}
+
+	u.RawQuery = qs.Encode()
+	return u.String(), nil
 }
