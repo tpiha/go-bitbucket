@@ -1,6 +1,6 @@
 # go-bitbucket
 
-go-bitbucket is a Go client library for accessing the Bitbucket API 2.0
+go-bitbucket is a Go client library for accessing the Bitbucket API 2.0 & 1.0
 
 ### Authentication ###
 
