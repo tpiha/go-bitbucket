@@ -21,10 +21,11 @@ import (
 )
 
 const (
-	libraryVersion = "0.1"
-	defaultBaseURL = "https://bitbucket.org/api/2.0/"
-	userAgent      = "go-bitbucket/" + libraryVersion
-	mediaTypeV3    = "application/vnd.github.v3+json"
+	libraryVersion   = "0.1"
+	defaultBaseURL   = "https://bitbucket.org/api/2.0/"
+	defaultBaseURLV1 = "https://bitbucket.org/api/1.0/"
+	userAgent        = "go-bitbucket/" + libraryVersion
+	mediaTypeV3      = "application/vnd.github.v3+json"
 )
 
 // A Client manages communication with the Bitbucket API.
@@ -36,11 +37,17 @@ type Client struct {
 	// always be specified with a trailing slash.
 	BaseURL *url.URL
 
+	// Base URL for API requests.  Defaults to the public Bitbucket API. BaseURL should
+	// always be specified with a trailing slash.
+	BaseURLV1 *url.URL
+
 	// User agent used when communicating with the Bitbucket API.
 	UserAgent string
 
 	// Services used for talking to different parts of the Bitbucket API.
-	Users *UsersService
+	Users        *UsersService
+	Repositories *RepositoriesService
+	Changesets   *ChangesetsService
 }
 
 // NewClient returns a new Bitbucket API client.  If a nil httpClient is
@@ -56,6 +63,8 @@ func NewClient(httpClient *http.Client) *Client {
 	c := &Client{client: httpClient, BaseURL: baseURL, UserAgent: userAgent}
 
 	c.Users = &UsersService{client: c}
+	c.Repositories = &RepositoriesService{client: c}
+	c.Changesets = &ChangesetsService{client: c}
 
 	return c
 }
@@ -66,12 +75,29 @@ func NewClient(httpClient *http.Client) *Client {
 // specified, the value pointed to by body is JSON encoded and included as the
 // request body.
 func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
+	version := 2
+	return c.doRequest(method, urlStr, version, body)
+}
+
+// Same as NewRequest, but with API version 1.0
+func (c *Client) NewRequestV1(method, urlStr string, body interface{}) (*http.Request, error) {
+	version := 1
+	return c.doRequest(method, urlStr, version, body)
+}
+
+func (c *Client) doRequest(method, urlStr string, version int, body interface{}) (*http.Request, error) {
 	rel, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}
 
-	u := c.BaseURL.ResolveReference(rel)
+	var u *url.URL
+
+	if version == 2 {
+		u = c.BaseURL.ResolveReference(rel)
+	} else {
+		u = c.BaseURLV1.ResolveReference(rel)
+	}
 
 	var buf io.ReadWriter
 	if body != nil {
