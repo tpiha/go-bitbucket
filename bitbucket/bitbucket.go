@@ -45,9 +45,10 @@ type Client struct {
 	UserAgent string
 
 	// Services used for talking to different parts of the Bitbucket API.
-	Users        *UsersService
-	Repositories *RepositoriesService
-	Changesets   *ChangesetsService
+	Users          *UsersService
+	Repositories   *RepositoriesService
+	RepositoriesV1 *RepositoriesServiceV1
+	Changesets     *ChangesetsService
 }
 
 // NewClient returns a new Bitbucket API client.  If a nil httpClient is
@@ -59,11 +60,13 @@ func NewClient(httpClient *http.Client) *Client {
 		httpClient = http.DefaultClient
 	}
 	baseURL, _ := url.Parse(defaultBaseURL)
+	baseURLV1, _ := url.Parse(defaultBaseURLV1)
 
-	c := &Client{client: httpClient, BaseURL: baseURL, UserAgent: userAgent}
+	c := &Client{client: httpClient, BaseURL: baseURL, BaseURLV1: baseURLV1, UserAgent: userAgent}
 
 	c.Users = &UsersService{client: c}
 	c.Repositories = &RepositoriesService{client: c}
+	c.RepositoriesV1 = &RepositoriesServiceV1{client: c}
 	c.Changesets = &ChangesetsService{client: c}
 
 	return c

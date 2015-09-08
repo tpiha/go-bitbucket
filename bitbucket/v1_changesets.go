@@ -7,6 +7,7 @@ package bitbucket
 
 import (
 	"fmt"
+	// "strconv"
 )
 
 type ChangesetsService struct {
@@ -19,7 +20,17 @@ func (cs *ChangesetsService) List(owner, repo string, limit int, start string) (
 
 	u = fmt.Sprintf("repositories/%s/%s/changesets", owner, repo)
 
-	req, err := cs.client.NewRequestV1("POST", u, repo)
+	opt := ChangesetListOptions{
+		Limit: limit,
+		Start: start,
+	}
+
+	u, err := addOptions(u, opt)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	req, err := cs.client.NewRequestV1("GET", u, repo)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -34,22 +45,24 @@ func (cs *ChangesetsService) List(owner, repo string, limit int, start string) (
 }
 
 type Changeset struct {
-	Node  string `json:"node"`
-	Files []struct {
-		Type string `json:"type"`
-		File string `json:"file"`
-	} `json:"files"`
-	Branches     []interface{} `json:"branches"`
-	RawAuthor    string        `json:"raw_author"`
-	Utctimestamp string        `json:"utctimestamp"`
-	Author       string        `json:"author"`
-	Timestamp    string        `json:"timestamp"`
-	RawNode      string        `json:"raw_node"`
-	Parents      []string      `json:"parents"`
-	Branch       interface{}   `json:"branch"`
-	Message      string        `json:"message"`
-	Revision     interface{}   `json:"revision"`
-	Size         int           `json:"size"`
+	Node         string          `json:"node"`
+	Files        []ChangesetFile `json:"files"`
+	Branches     []interface{}   `json:"branches"`
+	RawAuthor    string          `json:"raw_author"`
+	Utctimestamp string          `json:"utctimestamp"`
+	Author       string          `json:"author"`
+	Timestamp    string          `json:"timestamp"`
+	RawNode      string          `json:"raw_node"`
+	Parents      []string        `json:"parents"`
+	Branch       interface{}     `json:"branch"`
+	Message      string          `json:"message"`
+	Revision     interface{}     `json:"revision"`
+	Size         int             `json:"size"`
+}
+
+type ChangesetFile struct {
+	Type string `json:"type"`
+	File string `json:"file"`
 }
 
 type ChangesetList struct {
@@ -57,4 +70,9 @@ type ChangesetList struct {
 	Start      string       `json:"start"`
 	Limit      int          `json:"limit"`
 	Changesets []*Changeset `json:"changesets"`
+}
+
+type ChangesetListOptions struct {
+	Limit int    `url:"limit,omitempty"`
+	Start string `url:"start,omitempty"`
 }
