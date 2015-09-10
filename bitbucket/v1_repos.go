@@ -23,7 +23,7 @@ func (s *RepositoriesServiceV1) GetContent(owner, repo, sha, path string) (*File
 
 	u = fmt.Sprintf("repositories/%s/%s/src/%s/%s", owner, repo, sha, path)
 
-	req, err := s.client.NewRequestV1("GET", u, repo)
+	req, err := s.client.NewRequestV1("GET", u, nil)
 	if err != nil {
 		return nil, nil, err
 	}

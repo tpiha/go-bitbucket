@@ -25,7 +25,7 @@ const (
 	defaultBaseURL   = "https://bitbucket.org/api/2.0/"
 	defaultBaseURLV1 = "https://bitbucket.org/api/1.0/"
 	userAgent        = "go-bitbucket/" + libraryVersion
-	mediaTypeV3      = "application/vnd.github.v3+json"
+	mediaTypeV3      = "application/json"
 )
 
 // A Client manages communication with the Bitbucket API.
@@ -116,10 +116,11 @@ func (c *Client) doRequest(method, urlStr string, version int, body interface{})
 		return nil, err
 	}
 
-	req.Header.Add("Accept", mediaTypeV3)
-	if c.UserAgent != "" {
-		req.Header.Add("User-Agent", c.UserAgent)
-	}
+	// req.Header.Add("Accept", mediaTypeV3)
+	req.Header.Add("Content-Type", mediaTypeV3)
+	// if c.UserAgent != "" {
+	// 	req.Header.Add("User-Agent", c.UserAgent)
+	// }
 	return req, nil
 }
 

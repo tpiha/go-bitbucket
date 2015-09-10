@@ -11,15 +11,16 @@ import (
 
 // Repository represents a Bitbucket repository.
 type Repository struct {
-	Name     string      `json:"name"`
-	Slug     string      `json:"slug"`
-	Owner    string      `json:"owner"`
-	Scm      string      `json:"scm"`
-	Logo     string      `json:"logo"`
-	Language string      `json:"language"`
-	Private  bool        `json:"is_private"`
-	IsFork   bool        `json:"is_fork"`
-	ForkOf   *Repository `json:"fork_of"`
+	Name        string      `json:"name,omitempty"`
+	Slug        string      `json:"slug,omitempty"`
+	Owner       string      `json:"owner,omitempty"`
+	Scm         string      `json:"scm,omitempty"`
+	Logo        string      `json:"logo,omitempty"`
+	Language    string      `json:"language,omitempty"`
+	Description string      `json:"description,omitempty"`
+	Private     bool        `json:"is_private,omitempty"`
+	IsFork      bool        `json:"is_fork,omitempty"`
+	ForkOf      *Repository `json:"fork_of,omitempty"`
 }
 
 // RepositoriesService handles communication with the repository related
@@ -46,4 +47,22 @@ func (s *RepositoriesService) Create(repo *Repository) (*Repository, *Response, 
 	}
 
 	return r, resp, err
+}
+
+// Delete a repository.
+func (s *RepositoriesService) Delete(owner, repo string) (*Response, error) {
+	var u string
+
+	u = fmt.Sprintf("repositories/%s/%s/", owner, repo)
+
+	req, err := s.client.NewRequest("DELETE", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := s.client.Do(req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
 }

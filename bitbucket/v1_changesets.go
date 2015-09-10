@@ -30,7 +30,7 @@ func (cs *ChangesetsService) List(owner, repo string, limit int, start string) (
 		return nil, nil, err
 	}
 
-	req, err := cs.client.NewRequestV1("GET", u, repo)
+	req, err := cs.client.NewRequestV1("GET", u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
